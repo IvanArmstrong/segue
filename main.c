@@ -4,6 +4,11 @@
 #define CGUI_STRIP_PREFIX
 #include <cgui.h>
 
+void button_cb(void *user_data) {
+	(void) user_data;
+	printf("BUTTON PRESSED SUKA!!!\n");
+}
+
 int main(int argc, char const *argv[]) {
 	Panel root_value = panel__create();
 	TreeNode *root = tree_node__create(&root_value);
@@ -12,7 +17,7 @@ int main(int argc, char const *argv[]) {
 	child1_value.layout_mode = Horizontal;
 	TreeNode *child1 = tree_node__create(&child1_value);
 
-	Button child2_value = button__create(NULL);
+	Button child2_value = button__create(button_cb);
 	TreeNode *child2 = tree_node__create(&child2_value);
 
 	Panel child3_value = panel__create();

@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <raylib.h>
 
 #include <panel.h>
 #include <tree.h>
@@ -8,7 +7,7 @@
 void cgui_panel__draw(TreeNode *node, void *user_data) {
 	CGuiPanel *panel = (CGuiPanel *) node->value;
 	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
-	draw_bevel_rect(params->x, params->y, params->width, params->height, params->background);
+	cgui_draw_bevel_rect(params->x, params->y, params->width, params->height, params->background);
 
 	for (size_t i = 0; i < node->children_count; i++) {
 		CGuiPanelParams child_params = *params;
@@ -57,7 +56,7 @@ CGuiPanelParams cgui_panel_params__default() {
 		.padding_right		= 5,
 		.has_focus			= false,
 
-		.background			= GRAY,
-		.border				= LIGHTGRAY,
+		.background			= CGUI_GRAY,
+		.border				= CGUI_LIGHTGRAY,
 	};
 }

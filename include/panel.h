@@ -3,10 +3,10 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <raylib.h>
 
 #include <layout.h>
 #include <tree.h>
+#include <graphics.h>
 
 typedef struct {
 	node_vptr		vptr;
@@ -27,8 +27,8 @@ typedef struct {
 	int padding_left;
 	int padding_right;
 
-	Color background;
-	Color border;
+	CGuiColor background;
+	CGuiColor border;
 
 	bool has_focus;
 } CGuiPanelParams;
