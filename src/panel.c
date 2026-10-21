@@ -2,10 +2,10 @@
 
 #include <cgui.h>
 
-void cgui_panel__draw(TreeNode *node, void *user_data) {
+void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	CGuiPanel *panel = (CGuiPanel *) node->value;
 	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
-	cgui_draw_bevel_rect(params->x, params->y, params->width, params->height, params->background);
+	cgui_draw_bevel_rect(ctx, params->x, params->y, params->width, params->height, params->background);
 
 	for (size_t i = 0; i < node->children_count; i++) {
 		CGuiPanelParams child_params = *params;
@@ -26,12 +26,12 @@ void cgui_panel__draw(TreeNode *node, void *user_data) {
 		child_params.width -= params->padding_left + params->padding_right;
 		child_params.height -= params->padding_top + params->padding_bottom;
 
-		node_value__draw(node->children[i], &child_params);
+		cgui_node_value__draw(ctx, node->children[i], &child_params);
 	}
 }
 
 CGuiPanel cgui_panel__create() {
-	static NodeValueVTable vtable = {
+	static CGuiNodeValueVTable vtable = {
 		.draw = cgui_panel__draw,
 	};
 	CGuiPanel panel = {

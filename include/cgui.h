@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+struct CGuiContext;
+typedef struct CGuiContext CGuiContext;
+
 typedef struct {
 	unsigned char r;
 	unsigned char g;
@@ -26,23 +29,23 @@ typedef enum {
 	CGUI_MOUSE_MIDDLE,
 } CGuiMouseButton;
 
-typedef struct TreeNode {
-	int				id;
-	void			*value;
-	struct TreeNode	**children;
-	size_t			children_count;
-	size_t			children_cap;
-} TreeNode;
+typedef struct CGuiTreeNode {
+	int					id;
+	void				*value;
+	struct CGuiTreeNode	**children;
+	size_t				children_count;
+	size_t				children_cap;
+} CGuiTreeNode;
 
 typedef struct {
-	void	(*draw)(TreeNode *, void *);
-} NodeValueVTable;
+	void	(*draw)(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+} CGuiNodeValueVTable;
 
-typedef NodeValueVTable *node_vptr;
+typedef CGuiNodeValueVTable *node_vptr;
 
 typedef struct {
 	node_vptr vptr;
-} NodeValue;
+} CGuiNodeValue;
 
 typedef void (*button_cb_p)(void *);
 
@@ -84,31 +87,31 @@ typedef struct {
 	bool has_focus;
 } CGuiPanelParams;
 
+struct CGuiContext {
+	void		(*draw_line)(int x1, int y1, int x2, int y2, int thickness, CGuiColor color);
+	void		(*draw_rectangle)(int x, int y, int width, int height, int thickness, CGuiColor color);
+	bool		(*is_mouse_pressed)(CGuiMouseButton button);
+	bool		(*is_mouse_down)(CGuiMouseButton button);
+	bool		(*is_mouse_up)(CGuiMouseButton button);
+	CGuiIVec	(*mouse_pos)();
+};
 
-void			cgui_draw_line(int x1, int y1, int x2, int y2, int thickness, CGuiColor color);
-void			cgui_draw_rectangle(int x, int y, int width, int height, int thickness, CGuiColor color);
-bool			cgui_is_mouse_pressed(CGuiMouseButton button);
-bool			cgui_is_mouse_down(CGuiMouseButton button);
-bool			cgui_is_mouse_up(CGuiMouseButton button);
-CGuiIVec		cgui_mouse_pos();
+CGuiTreeNode	*cgui_tree_node__create(void *value);
+int				cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
+void			cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
+void			cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
 
-TreeNode		*tree_node__create(void *value);
-int				tree_node__add_child(TreeNode *parent, TreeNode *child);
-void			tree_node__free(TreeNode *node, void (*free_value_cb)(void *));
-void			tree_node__execute(TreeNode *node, void (*callback)(TreeNode *, void *), void *user_data);
+void			_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGuiNodeValue	cgui_node_value__create();
+void			cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 
-void			_node_value__draw(TreeNode *node, void *user_data);
-NodeValue		node_value__create();
-void			node_value__draw(TreeNode *node, void *user_data);
-
-void			cgui_button__draw(TreeNode *node, void *user_data);
+void			cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGuiButton		cgui_button__create(button_cb_p callback);
 
-void			cgui_draw_bevel_rect(int x, int y, int width, int height, CGuiColor background);
+void			cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
 
-void			cgui_panel__draw(TreeNode *node, void *user_data);
+void			cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGuiPanel		cgui_panel__create();
-
 
 CGuiPanelParams	cgui_panel_params__default();
 bool			cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
@@ -123,6 +126,8 @@ bool			cgui_check_collision_point_circle(int px, int py, int cx, int cy, int rad
 #		define LayoutMode				CGuiLayoutMode
 #		define Panel					CGuiPanel
 #		define PanelParams				CGuiPanelParams
+#		define TreeNode					CGuiTreeNode
+#		define NodeValue				CGuiNodeValue
 
 #		define button__draw				cgui_button__draw
 #		define button__create			cgui_button__create
@@ -130,5 +135,11 @@ bool			cgui_check_collision_point_circle(int px, int py, int cx, int cy, int rad
 #		define panel__draw				cgui_panel__draw
 #		define panel__create			cgui_panel__create
 #		define panel_params__default	cgui_panel_params__default
+#		define tree_node__create		cgui_tree_node__create
+#		define tree_node__add_child		cgui_tree_node__add_child
+#		define node_value__draw			cgui_node_value__draw
+#		define tree_node__free			cgui_tree_node__free
+#		define tree_node__free			cgui_tree_node__free
+#		define tree_node__execute		cgui_tree_node__execute
 #	endif // CGUI_STRIP_PREFIX
 #endif // CGUI_STRIP_PREFIX_GUARD_

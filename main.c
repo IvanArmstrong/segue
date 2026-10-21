@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <raylib.h>
 
-#define CGUI_STRIP_PREFIX
-#include <cgui.h>
+#include "graphics_imp.h"
 
 void button_cb(void *user_data) {
 	(void) user_data;
@@ -10,6 +9,8 @@ void button_cb(void *user_data) {
 }
 
 int main(int argc, char const *argv[]) {
+	CGuiContext ctx = cgui_create_context();
+
 	Panel root_value = panel__create();
 	TreeNode *root = tree_node__create(&root_value);
 
@@ -66,7 +67,7 @@ int main(int argc, char const *argv[]) {
 			a_held = false;
 			b_held = false;
 		}
-		node_value__draw(root, &params);
+		node_value__draw(&ctx, root, &params);
 
 		EndDrawing();
 	}

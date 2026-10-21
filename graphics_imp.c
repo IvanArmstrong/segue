@@ -1,4 +1,4 @@
-#include <cgui.h>
+#include "graphics_imp.h"
 
 #include <raylib.h>
 
@@ -40,4 +40,15 @@ bool cgui_is_mouse_up(CGuiMouseButton button) {
 CGuiIVec cgui_mouse_pos() {
 	Vector2 mouse_pos = GetMousePosition();
 	return (CGuiIVec) { (int) mouse_pos.x, (int) mouse_pos.y };
+}
+
+CGuiContext cgui_create_context() {
+	return (CGuiContext) {
+		.draw_line			= cgui_draw_line,
+		.draw_rectangle		= cgui_draw_rectangle,
+		.is_mouse_pressed	= cgui_is_mouse_pressed,
+		.is_mouse_down		= cgui_is_mouse_down,
+		.is_mouse_up		= cgui_is_mouse_up,
+		.mouse_pos			= cgui_mouse_pos,
+	};
 }
