@@ -1,9 +1,4 @@
-#include <button.h>
-
-#include <panel.h>
-#include <graphics.h>
-#include <drawing.h>
-#include <utils.h>
+#include <cgui.h>
 
 void cgui_button__draw(TreeNode *node, void *user_data) {
 	CGuiButton *button = (CGuiButton *) node->value;

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <tree.h>
+#include <cgui.h>
 
 TreeNode *tree_node__create(void *value) {
 	static int next_id = 0;

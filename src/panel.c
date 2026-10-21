@@ -1,8 +1,6 @@
 #include <stdio.h>
 
-#include <panel.h>
-#include <tree.h>
-#include <drawing.h>
+#include <cgui.h>
 
 void cgui_panel__draw(TreeNode *node, void *user_data) {
 	CGuiPanel *panel = (CGuiPanel *) node->value;
