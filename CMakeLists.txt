@@ -11,9 +11,17 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(raylib)
 
-add_executable(CGui main.c
-	graphics_imp.c
+# add_executable(CGui main.c
+# 	graphics_imp.c
 
+# 	src/tree.c
+# 	src/panel.c
+# 	src/button.c
+# 	src/drawing.c
+# 	src/utils.c
+# )
+
+add_library(CGui SHARED
 	src/tree.c
 	src/panel.c
 	src/button.c

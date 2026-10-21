@@ -1,6 +1,20 @@
 #ifndef CGUI_H
 #define CGUI_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+#ifdef _WIN32
+#	ifdef CGUI_BUILD_DLL
+#		define CGUI_API __declspec(dllexport)
+#	else
+#		define CGUI_API __declspec(dllimport)
+#	endif
+#else
+#	define CGUI_API __attribute__((visibility("default")))
+#endif
+
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -96,26 +110,30 @@ struct CGuiContext {
 	CGuiIVec	(*mouse_pos)();
 };
 
-CGuiTreeNode	*cgui_tree_node__create(void *value);
-int				cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
-void			cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
-void			cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
+CGUI_API CGuiTreeNode		*cgui_tree_node__create(void *value);
+CGUI_API int				cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
+CGUI_API void				cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
+CGUI_API void				cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
 
-void			_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGuiNodeValue	cgui_node_value__create();
-void			cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API void				_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiNodeValue		cgui_node_value__create();
+CGUI_API void				cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 
-void			cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGuiButton		cgui_button__create(button_cb_p callback);
+CGUI_API void				cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiButton			cgui_button__create(button_cb_p callback);
 
-void			cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
+CGUI_API void				cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
 
-void			cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGuiPanel		cgui_panel__create();
+CGUI_API void				cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiPanel			cgui_panel__create();
 
-CGuiPanelParams	cgui_panel_params__default();
-bool			cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
-bool			cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
+CGUI_API CGuiPanelParams	cgui_panel_params__default();
+CGUI_API bool				cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
+CGUI_API bool				cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif CGUI_H
 
