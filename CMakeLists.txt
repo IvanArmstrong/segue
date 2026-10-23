@@ -11,23 +11,25 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(raylib)
 
-# add_executable(CGui main.c
-# 	graphics_imp.c
+add_executable(CGui main.c
+	graphics_imp.c
 
+	src/tree.c
+	src/panel.c
+	src/button.c
+	src/label.c
+	src/drawing.c
+	src/utils.c
+	src/context.c
+)
+
+# add_library(CGui SHARED
 # 	src/tree.c
 # 	src/panel.c
 # 	src/button.c
 # 	src/drawing.c
 # 	src/utils.c
 # )
-
-add_library(CGui SHARED
-	src/tree.c
-	src/panel.c
-	src/button.c
-	src/drawing.c
-	src/utils.c
-)
 
 target_include_directories(CGui PUBLIC platform/windows)
 
@@ -37,3 +39,4 @@ target_include_directories(CGui PRIVATE
 	${raylib_SOURCE_DIR}
 	include
 )
+target_compile_definitions(CGui PRIVATE CGUI_BUILD_DLL)

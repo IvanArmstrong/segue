@@ -1,0 +1,8 @@
+#include <cgui.h>
+
+void cgui_label__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
+	CGuiLabel *label = (CGuiLabel *) node->value;
+	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
+
+	cgui_draw_styled_text(ctx, &label->text_object, params);
+}

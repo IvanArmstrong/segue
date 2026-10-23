@@ -15,27 +15,16 @@ void cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 		}
 	}
 
-	if (!ctx->is_mouse_down(CGUI_MOUSE_LEFT)) {
-		if (button->pressed) {
-			button->callback(NULL);
+	if (button->callback) {
+		if (!ctx->is_mouse_down(CGUI_MOUSE_LEFT)) {
+			if (button->pressed) {
+				button->callback(ctx, node);
+			}
+			button->pressed = false;
 		}
-		button->pressed = false;
 	}
 
 	cgui_draw_bevel_rect(ctx, params->x, params->y, params->width, params->height, background);
-}
-
-CGuiButton cgui_button__create(button_cb_p callback) {
-	static CGuiNodeValueVTable vtable = {
-		.draw = cgui_button__draw,
-	};
-	CGuiButton button = {
-		.vptr = &vtable,
-		.callback = callback,
-		.pressed = false,
-		.highlight_color = CGUI_LIGHTGRAY,
-		.press_color = CGUI_DARKGRAY,
-		.normal_color = CGUI_GRAY,
-	};
-	return button;
+	ctx->draw_rectangle(params->x - 1, params->y - 1, params->width + 2, params->height + 2, 1, CGUI_BLACK);
+	cgui_draw_styled_text(ctx, &button->text_object, params);
 }

@@ -50,8 +50,35 @@ void cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *
 	}
 }
 
+void cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent, void *user_data) {
+	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
+
+	ctx->draw_rectangle(params->x, params->y, params->width, params->height, -1, CGUI_GRAY);
+	ctx->draw_rectangle(params->x, params->y, params->width, params->height, 1, CGUI_DARKGRAY);
+
+	if (!node->value)
+		return;
+
+	CGuiNodeValue *value = (CGuiNodeValue *) node->value;
+	if (value->expanded) {
+		for (size_t i = 0; i < node->children_count; i++) {
+			CGuiPanelParams child_params = *params;
+			child_params.x += indent * 16;
+			cgui_tree_node__draw_tree(ctx, node->children[i], indent + 1, &child_params);
+		}
+	}
+}
+
 void _cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
-	printf("Drawing Nameless Thing!\n");
+	CGuiPanelParams params = cgui_panel_params__default();
+	cgui_tree_node__draw_tree(ctx, node, 0, &params);
+}
+
+bool _cgui_node_value__expanded(CGuiTreeNode *node, void *user_data) {
+	if (!node->value)
+		return false;
+	CGuiNodeValue *value = (CGuiNodeValue *) node->value;
+	return value->expanded;
 }
 
 CGuiNodeValue cgui_node_value__create() {
@@ -60,6 +87,7 @@ CGuiNodeValue cgui_node_value__create() {
 	};
 	CGuiNodeValue value = {
 		.vptr = &vtable,
+		.expanded = true,
 	};
 	return value;
 }

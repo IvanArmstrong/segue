@@ -2,6 +2,16 @@
 
 #include <cgui.h>
 
+CGuiText cgui_create_text_object(const char *text) {
+	return (CGuiText) {
+		.text			= text,
+		.font_size		= 16,
+		.horiz_align	= ALIGN_HORIZ_CENTER,
+		.vert_align		= ALIGN_VERT_CENTER,
+		.font_color		= CGUI_BLACK,
+	};
+}
+
 bool cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight) {
 	return px >= rx && py >= ry && px < rx + rwidth && py < ry + rheight;
 }

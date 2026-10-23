@@ -31,6 +31,7 @@ typedef struct {
 static const CGuiColor CGUI_LIGHTGRAY = { 200, 200, 200, 255 };
 static const CGuiColor CGUI_GRAY = { 155, 155, 155, 255 };
 static const CGuiColor CGUI_DARKGRAY = { 100, 100, 100, 255 };
+static const CGuiColor CGUI_BLACK = { 0, 0, 0, 255 };
 
 typedef struct {
 	int x;
@@ -53,26 +54,55 @@ typedef struct CGuiTreeNode {
 
 typedef struct {
 	void	(*draw)(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+	bool	(*expanded)(CGuiTreeNode *node, void *user_data);
 } CGuiNodeValueVTable;
 
 typedef CGuiNodeValueVTable *node_vptr;
 
 typedef struct {
 	node_vptr vptr;
+
+	bool expanded;
 } CGuiNodeValue;
 
-typedef void (*button_cb_p)(void *);
+typedef enum {
+	ALIGN_VERT_CENTER,
+	ALIGN_VERT_TOP,
+	ALIGN_VERT_BOTTOM,
+} CGuiVertAlign;
+
+typedef enum {
+	ALIGN_HORIZ_CENTER,
+	ALIGN_HORIZ_LEFT,
+	ALIGN_HORIZ_RIGHT,
+} CGuiHorizAlign;
 
 typedef struct {
-	node_vptr	vptr;
-	
-	button_cb_p	callback;
-	bool		pressed;
+	const char		*text;
+	int				font_size;
+	CGuiHorizAlign	horiz_align;
+	CGuiVertAlign	vert_align;
+	CGuiColor		font_color;
+} CGuiText;
 
-	CGuiColor	highlight_color;
-	CGuiColor	press_color;
-	CGuiColor	normal_color;
+typedef struct {
+	node_vptr		vptr;
+
+	CGuiText		text_object;
+	
+	void			(*callback)(CGuiContext *ctx, CGuiTreeNode *button);
+	void			*user_data;
+	bool			pressed;
+
+	CGuiColor		highlight_color;
+	CGuiColor		press_color;
+	CGuiColor		normal_color;
 } CGuiButton;
+
+typedef struct {
+	node_vptr		vptr;
+	CGuiText		text_object;
+} CGuiLabel;
 
 typedef enum {
 	Horizontal,
@@ -101,35 +131,71 @@ typedef struct {
 	bool has_focus;
 } CGuiPanelParams;
 
+typedef enum {
+	CGUI_COMP_BUTTON,
+	CGUI_COMP_PANEL,
+	CGUI_COMP_LABEL,
+} CGuiComponentKind;
+
+typedef struct {
+	CGuiComponentKind kind;
+	union {
+		CGuiButton	button;
+		CGuiPanel	panel;
+		CGuiLabel	label;
+	} value;
+} CGuiComponent;
+
 struct CGuiContext {
 	void		(*draw_line)(int x1, int y1, int x2, int y2, int thickness, CGuiColor color);
 	void		(*draw_rectangle)(int x, int y, int width, int height, int thickness, CGuiColor color);
+	void		(*draw_text)(const char *text, int x, int y, int font_size, CGuiColor color);
+	int			(*measure_text)(const char *text, int font_size);
 	bool		(*is_mouse_pressed)(CGuiMouseButton button);
 	bool		(*is_mouse_down)(CGuiMouseButton button);
 	bool		(*is_mouse_up)(CGuiMouseButton button);
 	CGuiIVec	(*mouse_pos)();
+
+	// This is kinda lazy and I know there's a better way to do this,
+	// but I didn't want to implement a malloc for each freaking component. No way, man.
+	// It's union time
+	CGuiComponent	**components;
+	size_t			components_count;
+	size_t			components_cap;
 };
+
+void	_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+bool	_cgui_node_value__expanded(CGuiTreeNode *node, void *user_data);
 
 CGUI_API CGuiTreeNode		*cgui_tree_node__create(void *value);
 CGUI_API int				cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
 CGUI_API void				cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
 CGUI_API void				cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
+CGUI_API void				cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent, void *user_data);
 
-CGUI_API void				_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGUI_API CGuiNodeValue		cgui_node_value__create();
 CGUI_API void				cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 
-CGUI_API void				cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGUI_API CGuiButton			cgui_button__create(button_cb_p callback);
-
+CGUI_API void				cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiPanelParams *params);
 CGUI_API void				cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
 
+CGUI_API void				cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGUI_API void				cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGUI_API CGuiPanel			cgui_panel__create();
+CGUI_API void				cgui_label__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 
 CGUI_API CGuiPanelParams	cgui_panel_params__default();
+CGUI_API CGuiText			cgui_create_text_object(const char *text);
 CGUI_API bool				cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
 CGUI_API bool				cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
+
+CGUI_API void				*cgui_component__get(CGuiComponent *component);
+
+CGUI_API void				cgui_context__init(CGuiContext *ctx);
+CGUI_API int				cgui_context__add_component(CGuiContext *ctx, CGuiComponent *component);
+CGUI_API CGuiButton			*cgui_context__create_button(CGuiContext *ctx, const char *text, void (*callback)(CGuiContext *ctx, CGuiTreeNode *button), void *user_data);;
+CGUI_API CGuiPanel			*cgui_context__create_panel(CGuiContext *ctx);
+CGUI_API CGuiLabel			*cgui_context__create_label(CGuiContext *ctx, const char *text);
+CGUI_API void				cgui_context__free(CGuiContext *ctx);
 
 #ifdef __cplusplus
 }
@@ -140,18 +206,19 @@ CGUI_API bool				cgui_check_collision_point_circle(int px, int py, int cx, int c
 #ifndef CGUI_STRIP_PREFIX_GUARD_
 #define CGUI_STRIP_PREFIX_GUARD_
 #	ifdef CGUI_STRIP_PREFIX
-#		define Button					CGuiButton
 #		define LayoutMode				CGuiLayoutMode
+#		define Button					CGuiButton
 #		define Panel					CGuiPanel
 #		define PanelParams				CGuiPanelParams
+#		define Label					CGuiLabel
 #		define TreeNode					CGuiTreeNode
 #		define NodeValue				CGuiNodeValue
+#		define Context					CGuiContext
+#		define Component				CGuiComponent
 
 #		define button__draw				cgui_button__draw
-#		define button__create			cgui_button__create
 #		define draw_bevel_rect			cgui_draw_bevel_rect
 #		define panel__draw				cgui_panel__draw
-#		define panel__create			cgui_panel__create
 #		define panel_params__default	cgui_panel_params__default
 #		define tree_node__create		cgui_tree_node__create
 #		define tree_node__add_child		cgui_tree_node__add_child
@@ -159,5 +226,11 @@ CGUI_API bool				cgui_check_collision_point_circle(int px, int py, int cx, int c
 #		define tree_node__free			cgui_tree_node__free
 #		define tree_node__free			cgui_tree_node__free
 #		define tree_node__execute		cgui_tree_node__execute
+#		define context__init			cgui_context__init
+#		define context__add_component	cgui_context__add_component
+#		define context__create_button	cgui_context__create_button
+#		define context__create_panel	cgui_context__create_panel
+#		define context__create_label	cgui_context__create_label
+#		define context__free			cgui_context__free
 #	endif // CGUI_STRIP_PREFIX
 #endif // CGUI_STRIP_PREFIX_GUARD_

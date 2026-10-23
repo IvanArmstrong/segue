@@ -30,18 +30,6 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	}
 }
 
-CGuiPanel cgui_panel__create() {
-	static CGuiNodeValueVTable vtable = {
-		.draw = cgui_panel__draw,
-	};
-	CGuiPanel panel = {
-		.vptr = &vtable,
-		.layout_mode = Vertical,
-	};
-	return panel;
-}
-
-
 CGuiPanelParams cgui_panel_params__default() {
 	return (CGuiPanelParams) {
 		.x					= 0,

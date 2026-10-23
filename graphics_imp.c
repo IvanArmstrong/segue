@@ -3,8 +3,7 @@
 #include <raylib.h>
 
 Color col_convert(CGuiColor color) {
-	Color new_color = *((Color *) &color);
-	return new_color;
+	return *((Color *) &color);
 }
 
 void cgui_draw_line(int x1, int y1, int x2, int y2, int thickness, CGuiColor color) {
@@ -23,6 +22,14 @@ void cgui_draw_rectangle(int x, int y, int width, int height, int thickness, CGu
 	} else {
 		DrawRectangle(x, y, width, height, col_convert(color));
 	}
+}
+
+void cgui_draw_text(const char *text, int x, int y, int font_size, CGuiColor color) {
+	DrawText(text, x, y, font_size, col_convert(color));
+}
+
+int cgui_measure_text(const char *text, int font_size) {
+	return MeasureText(text, font_size);
 }
 
 bool cgui_is_mouse_pressed(CGuiMouseButton button) {
@@ -46,6 +53,8 @@ CGuiContext cgui_create_context() {
 	return (CGuiContext) {
 		.draw_line			= cgui_draw_line,
 		.draw_rectangle		= cgui_draw_rectangle,
+		.draw_text			= cgui_draw_text,
+		.measure_text		= cgui_measure_text,
 		.is_mouse_pressed	= cgui_is_mouse_pressed,
 		.is_mouse_down		= cgui_is_mouse_down,
 		.is_mouse_up		= cgui_is_mouse_up,
