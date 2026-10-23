@@ -7,19 +7,34 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
 	cgui_draw_bevel_rect(ctx, params->x, params->y, params->width, params->height, params->background);
 
+	int last_basis = 0;
 	for (size_t i = 0; i < node->children_count; i++) {
 		CGuiPanelParams child_params = *params;
 		child_params.x += params->padding_left;
 		child_params.y += params->padding_top;
 
+		CGuiComponentProps *child_props = (CGuiComponentProps *) cgui_node_value__get_component_props(node->children[i], user_data);
+
 		switch (panel->layout_mode) {
 			case Horizontal: {
-				child_params.width /= (int) node->children_count;
-				child_params.x += child_params.width * i;
+				if (child_props->basis == 0) {
+					child_params.width /= (int) node->children_count;
+				} else {
+					child_params.width = child_props->basis;
+				}
+
+				child_params.x += last_basis * i;
+				last_basis = child_params.width;
 			} break;
 			case Vertical: {
-				child_params.height /= (int) node->children_count;
-				child_params.y += child_params.height * i;
+				if (child_props->basis == 0) {
+					child_params.height /= (int) node->children_count;
+				} else {
+					child_params.height = child_props->basis;
+				}
+
+				child_params.y += last_basis * i;
+				last_basis = child_params.height;
 			} break;
 		}
 
@@ -27,7 +42,16 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 		child_params.height -= params->padding_top + params->padding_bottom;
 
 		cgui_node_value__draw(ctx, node->children[i], &child_params);
+
+		// last_basis = child_props->basis;
 	}
+}
+
+CGuiComponentProps *cgui_panel__get_props(CGuiTreeNode *node, void *user_data) {
+	(void) user_data;
+
+	CGuiPanel *panel = (CGuiPanel *) node->value;
+	return &panel->props;
 }
 
 CGuiPanelParams cgui_panel_params__default() {

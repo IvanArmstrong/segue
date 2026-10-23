@@ -7,13 +7,12 @@ void cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiPanelPar
 	int text_x = params->x;
 	int text_y = params->y;
 
+	int text_width = ctx->measure_text(text_object->text, text_object->font_size);
 	switch (text_object->horiz_align) {
 		case ALIGN_HORIZ_CENTER: {
-			int text_width = ctx->measure_text(text_object->text, text_object->font_size);
 			text_x = params->x + ((params->width / 2) - (text_width / 2));
 		} break;
 		case ALIGN_HORIZ_RIGHT: {
-			int text_width = ctx->measure_text(text_object->text, text_object->font_size);
 			text_x = params->x + params->width - text_width;
 		} break;
 		default: break;
@@ -29,7 +28,11 @@ void cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiPanelPar
 		default: break;
 	}
 
-	ctx->draw_text(text_object->text, text_x, text_y, text_object->font_size, CGUI_BLACK);
+	if (text_width >= params->width) {
+		ctx->draw_text("...", text_x, text_y, text_object->font_size, CGUI_BLACK);
+	} else {
+		ctx->draw_text(text_object->text, text_x, text_y, text_object->font_size, CGUI_BLACK);
+	}
 }
 
 void cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background) {

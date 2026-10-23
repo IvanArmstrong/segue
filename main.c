@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <raylib.h>
 
 #include "graphics_imp.h"
@@ -10,8 +12,8 @@ void test_button_cb(Context *ctx, TreeNode *button) {
 	Panel *new_panel = context__create_panel(ctx);
 	Panel *grand_child_panel = context__create_panel(ctx);
 	Label *label = context__create_label(ctx, "ASDSFASF");
-	label->text_object.horiz_align = ALIGN_HORIZ_CENTER;
-	label->text_object.vert_align = ALIGN_VERT_BOTTOM;
+	label->text_object.horiz_align = abs(rand() % 3);
+	label->text_object.vert_align = abs(rand() % 3);
 	new_panel->layout_mode = Horizontal;
 	TreeNode *child = tree_node__create(new_panel);
 	TreeNode *grand_child = tree_node__create(grand_child_panel);
@@ -23,38 +25,73 @@ void test_button_cb(Context *ctx, TreeNode *button) {
 }
 
 int main(int argc, char const *argv[]) {
+	srand(time(NULL));
+
 	CGuiContext ctx = cgui_create_context();
 	cgui_context__init(&ctx);
 
 	Panel *root_value = context__create_panel(&ctx);
+	root_value->layout_mode = Vertical;
 	TreeNode *root = tree_node__create(root_value);
 
-	Panel *child1_value = context__create_panel(&ctx);
-	child1_value->layout_mode = Horizontal;
-	TreeNode *child1 = tree_node__create(child1_value);
+	// Header
+	Panel *header_panel = context__create_panel(&ctx);
+	header_panel->layout_mode = Horizontal;
+	header_panel->props.basis = 40;
+	TreeNode *header = tree_node__create(header_panel);
+	tree_node__add_child(root, header);
 
-	Button *button = context__create_button(&ctx, "TEST", test_button_cb, root);
-	TreeNode *child2 = tree_node__create(button);
+	for (int i = 0; i < 5; i++) {
+		Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
+		button_value->props.basis = 100;
+		TreeNode *button = tree_node__create(button_value);
+		tree_node__add_child(header, button);
+	}
 
-	Panel *child3_value = context__create_panel(&ctx);
-	TreeNode *child3 = tree_node__create(child3_value);
+	// Body
+	Panel *body_panel = context__create_panel(&ctx);
+	body_panel->props.basis = 0;
+	TreeNode *body = tree_node__create(body_panel);
+	tree_node__add_child(root, body);
 
-	Panel *child4_value = context__create_panel(&ctx);
-	TreeNode *child4 = tree_node__create(child4_value);
+	// Footer
+	Panel *footer_panel = context__create_panel(&ctx);
+	footer_panel->layout_mode = Horizontal;
+	footer_panel->props.basis = 40;
+	TreeNode *footer = tree_node__create(footer_panel);
+	tree_node__add_child(root, footer);
 
-	tree_node__add_child(child1, child2);
-	tree_node__add_child(child1, child4);
-	tree_node__add_child(root, child1);
-	tree_node__add_child(root, child3);
+	for (int i = 0; i < 3; i++) {
+		Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
+		button_value->props.basis = 100;
+		TreeNode *button = tree_node__create(button_value);
+		tree_node__add_child(footer, button);
+	}
+
+	// Panel *child1_value = context__create_panel(&ctx);
+	// child1_value->layout_mode = Horizontal;
+	// TreeNode *child1 = tree_node__create(child1_value);
+
+	// Button *button = context__create_button(&ctx, "TEST", test_button_cb, root);
+	// TreeNode *child2 = tree_node__create(button);
+
+	// Panel *child3_value = context__create_panel(&ctx);
+	// TreeNode *child3 = tree_node__create(child3_value);
+
+	// Panel *child4_value = context__create_panel(&ctx);
+	// TreeNode *child4 = tree_node__create(child4_value);
+
+	// tree_node__add_child(child1, child2);
+	// tree_node__add_child(child1, child4);
+	// tree_node__add_child(root, child1);
+	// tree_node__add_child(root, child3);
+
 
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(1152, 648, "C Gui!");
+	SetWindowState(FLAG_WINDOW_RESIZABLE);
 
 	PanelParams params = panel_params__default();
-	params.x = 200;
-	params.y = 200;
-	params.width = 500;
-	params.height = 400;
 
 	bool a_held = false;
 	bool b_held = false;
@@ -62,6 +99,11 @@ int main(int argc, char const *argv[]) {
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 		ClearBackground(BLACK);
+
+		params.x = 0;
+		params.y = 0;
+		params.width = GetScreenWidth();
+		params.height = GetScreenHeight();
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 			Vector2 mouse_pos = GetMousePosition();
@@ -83,6 +125,8 @@ int main(int argc, char const *argv[]) {
 			b_held = false;
 		}
 		node_value__draw(&ctx, root, &params);
+
+		DrawFPS(1, 1);
 
 		EndDrawing();
 	}

@@ -12,6 +12,12 @@ CGuiText cgui_create_text_object(const char *text) {
 	};
 }
 
+CGuiComponentProps cgui_create_component_props() {
+	return (CGuiComponentProps) {
+		.basis = 0,
+	};
+}
+
 bool cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight) {
 	return px >= rx && py >= ry && px < rx + rwidth && py < ry + rheight;
 }

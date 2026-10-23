@@ -28,10 +28,10 @@ typedef struct {
 	unsigned char a;
 } CGuiColor;
 
-static const CGuiColor CGUI_LIGHTGRAY = { 200, 200, 200, 255 };
-static const CGuiColor CGUI_GRAY = { 155, 155, 155, 255 };
-static const CGuiColor CGUI_DARKGRAY = { 100, 100, 100, 255 };
-static const CGuiColor CGUI_BLACK = { 0, 0, 0, 255 };
+static const CGuiColor CGUI_LIGHTGRAY	= { 200, 200, 200, 255 };
+static const CGuiColor CGUI_GRAY		= { 155, 155, 155, 255 };
+static const CGuiColor CGUI_DARKGRAY	= { 100, 100, 100, 255 };
+static const CGuiColor CGUI_BLACK		= { 0, 0, 0, 255 };
 
 typedef struct {
 	int x;
@@ -53,8 +53,13 @@ typedef struct CGuiTreeNode {
 } CGuiTreeNode;
 
 typedef struct {
-	void	(*draw)(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-	bool	(*expanded)(CGuiTreeNode *node, void *user_data);
+	int	basis;
+} CGuiComponentProps;
+
+typedef struct {
+	void				(*draw)(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+	bool				(*expanded)(CGuiTreeNode *node, void *user_data);
+	CGuiComponentProps	*(*get_props)(CGuiTreeNode *node, void *user_data);
 } CGuiNodeValueVTable;
 
 typedef CGuiNodeValueVTable *node_vptr;
@@ -86,22 +91,25 @@ typedef struct {
 } CGuiText;
 
 typedef struct {
-	node_vptr		vptr;
+	node_vptr			vptr;
 
-	CGuiText		text_object;
+	CGuiComponentProps	props;
+
+	CGuiText			text_object;
 	
-	void			(*callback)(CGuiContext *ctx, CGuiTreeNode *button);
-	void			*user_data;
-	bool			pressed;
+	void				(*callback)(CGuiContext *ctx, CGuiTreeNode *button);
+	void				*user_data;
+	bool				pressed;
 
-	CGuiColor		highlight_color;
-	CGuiColor		press_color;
-	CGuiColor		normal_color;
+	CGuiColor			highlight_color;
+	CGuiColor			press_color;
+	CGuiColor			normal_color;
 } CGuiButton;
 
 typedef struct {
-	node_vptr		vptr;
-	CGuiText		text_object;
+	node_vptr			vptr;
+	CGuiComponentProps	props;
+	CGuiText			text_object;
 } CGuiLabel;
 
 typedef enum {
@@ -110,8 +118,9 @@ typedef enum {
 } CGuiLayoutMode;
 
 typedef struct {
-	node_vptr		vptr;
-	CGuiLayoutMode	layout_mode;
+	node_vptr			vptr;
+	CGuiComponentProps	props;
+	CGuiLayoutMode		layout_mode;
 } CGuiPanel;
 
 typedef struct {
@@ -164,8 +173,9 @@ struct CGuiContext {
 	size_t			components_cap;
 };
 
-void	_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-bool	_cgui_node_value__expanded(CGuiTreeNode *node, void *user_data);
+void				_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+bool				_cgui_node_value__expanded(CGuiTreeNode *node, void *user_data);
+CGuiComponentProps	*_cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
 
 CGUI_API CGuiTreeNode		*cgui_tree_node__create(void *value);
 CGUI_API int				cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
@@ -175,6 +185,7 @@ CGUI_API void				cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node,
 
 CGUI_API CGuiNodeValue		cgui_node_value__create();
 CGUI_API void				cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGuiComponentProps			*cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
 
 CGUI_API void				cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiPanelParams *params);
 CGUI_API void				cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
@@ -182,9 +193,13 @@ CGUI_API void				cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width,
 CGUI_API void				cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGUI_API void				cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGUI_API void				cgui_label__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiComponentProps *cgui_button__get_props(CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiComponentProps *cgui_panel__get_props(CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiComponentProps *cgui_label__get_props(CGuiTreeNode *node, void *user_data);
 
 CGUI_API CGuiPanelParams	cgui_panel_params__default();
 CGUI_API CGuiText			cgui_create_text_object(const char *text);
+CGUI_API CGuiComponentProps	cgui_create_component_props();
 CGUI_API bool				cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
 CGUI_API bool				cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
 

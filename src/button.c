@@ -28,3 +28,10 @@ void cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	ctx->draw_rectangle(params->x - 1, params->y - 1, params->width + 2, params->height + 2, 1, CGUI_BLACK);
 	cgui_draw_styled_text(ctx, &button->text_object, params);
 }
+
+CGuiComponentProps *cgui_button__get_props(CGuiTreeNode *node, void *user_data) {
+	(void) user_data;
+	
+	CGuiButton *button = (CGuiButton *) node->value;
+	return &button->props;
+}

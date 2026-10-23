@@ -27,12 +27,14 @@ CGuiButton *cgui_context__create_button(CGuiContext *ctx,
 		void *user_data) {
 	static CGuiNodeValueVTable vtable = {
 		.draw = cgui_button__draw,
+		.get_props = cgui_button__get_props,
 		.expanded = _cgui_node_value__expanded,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
 	component->kind = CGUI_COMP_BUTTON;
 	component->value.button = (CGuiButton) {
 		.vptr				= &vtable,
+		.props				= cgui_create_component_props(),
 		.text_object		= cgui_create_text_object(text),
 		.callback			= callback,
 		.user_data			= user_data,
@@ -48,12 +50,14 @@ CGuiButton *cgui_context__create_button(CGuiContext *ctx,
 CGuiPanel *cgui_context__create_panel(CGuiContext *ctx) {
 	static CGuiNodeValueVTable vtable = {
 		.draw = cgui_panel__draw,
+		.get_props = cgui_panel__get_props,
 		.expanded = _cgui_node_value__expanded,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
 	component->kind = CGUI_COMP_PANEL;
 	component->value.panel = (CGuiPanel) {
 		.vptr			= &vtable,
+		.props			= cgui_create_component_props(),
 		.layout_mode	= Vertical,
 	};
 	cgui_context__add_component(ctx, component);
@@ -63,12 +67,14 @@ CGuiPanel *cgui_context__create_panel(CGuiContext *ctx) {
 CGuiLabel *cgui_context__create_label(CGuiContext *ctx, const char *text) {
 	static CGuiNodeValueVTable vtable = {
 		.draw = cgui_label__draw,
+		.get_props = cgui_label__get_props,
 		.expanded = _cgui_node_value__expanded,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
 	component->kind = CGUI_COMP_LABEL;
 	component->value.label = (CGuiLabel) {
 		.vptr			= &vtable,
+		.props			= cgui_create_component_props(),
 		.text_object	= cgui_create_text_object(text),
 	};
 	cgui_context__add_component(ctx, component);

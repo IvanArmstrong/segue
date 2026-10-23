@@ -81,9 +81,16 @@ bool _cgui_node_value__expanded(CGuiTreeNode *node, void *user_data) {
 	return value->expanded;
 }
 
+CGuiComponentProps *_cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data) {
+	(void) node;
+	(void) user_data;
+	return NULL;
+}
+
 CGuiNodeValue cgui_node_value__create() {
 	static CGuiNodeValueVTable vtable = {
 		.draw = _cgui_node_value__draw,
+		.get_props = _cgui_node_value__get_component_props,
 	};
 	CGuiNodeValue value = {
 		.vptr = &vtable,
@@ -98,4 +105,12 @@ void cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data
 
 	CGuiNodeValue *node_value = (CGuiNodeValue *) node->value;
 	node_value->vptr->draw(ctx, node, user_data);
+}
+
+CGuiComponentProps *cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data) {
+	if (!node->value)
+		return NULL;
+
+	CGuiNodeValue *node_value = (CGuiNodeValue *) node->value;
+	return node_value->vptr->get_props(node, user_data);
 }
