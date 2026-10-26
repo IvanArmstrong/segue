@@ -31,11 +31,13 @@ int main(int argc, char const *argv[]) {
 	cgui_context__init(&ctx);
 
 	Container *root_value = context__create_container(&ctx);
+	root_value->style = CONT_STYLE_RAISED;
 	root_value->layout_mode = MODE_FLEX_VERT;
 	TreeNode *root = tree_node__create(root_value);
 
 	// Header
 	Container *header_container = context__create_container(&ctx);
+	// header_container->style = CONT_STYLE_RAISED;
 	header_container->layout_mode = MODE_FLEX_HORIZ;
 	header_container->props.basis = 40;
 	TreeNode *header = tree_node__create(header_container);
@@ -60,11 +62,42 @@ int main(int argc, char const *argv[]) {
 
 	// Body
 	Container *body_container = context__create_container(&ctx);
-	body_container->layout_mode = MODE_COORD;
-	body_container->props.basis = 0;
+	// body_container->style = CONT_STYLE_RAISED;
+	body_container->layout_mode = MODE_FLEX_HORIZ;
 	body_container->props.flex_mode = FLEX_MODE_AUTO;
 	TreeNode *body = tree_node__create(body_container);
 	tree_node__add_child(root, body);
+
+	// Body button flex container
+	Container *body_button_container_value = context__create_container(&ctx);
+	body_button_container_value->style = CONT_STYLE_INSET;
+	body_button_container_value->layout_mode = MODE_FLEX_VERT;
+	body_button_container_value->props.flex_mode = FLEX_MODE_AUTO;
+	TreeNode *body_button_container = tree_node__create(body_button_container_value);
+	tree_node__add_child(body, body_button_container);
+
+	char str[20][20] = { 0 };
+	for (int i = 0; i < 20; i++) {
+		Container *button_container_value = context__create_container(&ctx);
+		button_container_value->layout_mode = MODE_FLEX_HORIZ;
+		button_container_value->props.basis = 40;
+		TreeNode *button_container = tree_node__create(button_container_value);
+		tree_node__add_child(body_button_container, button_container);
+
+		sprintf(str[i], "BUTTON %d", i + 1);
+		Button *button_value = context__create_button(&ctx, str[i], NULL, NULL);
+		button_value->props.basis = 100;
+		TreeNode *button = tree_node__create(button_value);
+		tree_node__add_child(button_container, button);
+	}
+
+	// Body Coordinate Container
+	Container *body_coord_container_value = context__create_container(&ctx);
+	body_coord_container_value->style = CONT_STYLE_INSET;
+	body_coord_container_value->layout_mode = MODE_COORD;
+	body_coord_container_value->props.flex_mode = FLEX_MODE_AUTO;
+	TreeNode *body_coord_container = tree_node__create(body_coord_container_value);
+	tree_node__add_child(body, body_coord_container);
 	// Body Coordinate children
 	{
 		Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
@@ -73,11 +106,12 @@ int main(int argc, char const *argv[]) {
 		button_value->props.width = 100;
 		button_value->props.height = 40;
 		TreeNode *button = tree_node__create(button_value);
-		tree_node__add_child(body, button);
+		tree_node__add_child(body_coord_container, button);
 	}
 
 	// Footer
 	Container *footer_container = context__create_container(&ctx);
+	// footer_container->style = CONT_STYLE_RAISED;
 	footer_container->reversed = true;
 	footer_container->layout_mode = MODE_FLEX_HORIZ;
 	footer_container->props.basis = 40;
@@ -96,9 +130,9 @@ int main(int argc, char const *argv[]) {
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 
 	ContainerParams params = container_params__default();
-	params.x = 100;
-	params.y = 100;
-	params.width = 600;
+	params.x = 25;
+	params.y = 25;
+	params.width = 800;
 	params.height = 600;
 
 	bool a_held = false;

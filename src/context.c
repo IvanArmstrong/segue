@@ -29,6 +29,7 @@ CGuiButton *cgui_context__create_button(CGuiContext *ctx,
 		.draw = cgui_button__draw,
 		.get_props = cgui_button__get_props,
 		.expanded = _cgui_node_value__expanded,
+		.get_size = _cgui_node_value__get_size,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
 	component->kind = CGUI_COMP_BUTTON;
@@ -52,14 +53,18 @@ CGuiContainer *cgui_context__create_container(CGuiContext *ctx) {
 		.draw = cgui_container__draw,
 		.get_props = cgui_container__get_props,
 		.expanded = _cgui_node_value__expanded,
+		.get_size = _cgui_node_value__get_size,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
 	component->kind = CGUI_COMP_CONTAINER;
 	component->value.container = (CGuiContainer) {
-		.vptr			= &vtable,
-		.props			= cgui_create_component_props(),
-		.layout_mode	= MODE_FLEX_VERT,
-		.reversed		= false,
+		.vptr				= &vtable,
+		.props				= cgui_create_component_props(),
+		.layout_mode		= MODE_FLEX_VERT,
+		.reversed			= false,
+		.style				= CONT_STYLE_INVISIBLE,
+
+		.overflow_scroll	= 0,
 	};
 	cgui_context__add_component(ctx, component);
 	return &component->value.container;
@@ -70,6 +75,7 @@ CGuiLabel *cgui_context__create_label(CGuiContext *ctx, const char *text) {
 		.draw = cgui_label__draw,
 		.get_props = cgui_label__get_props,
 		.expanded = _cgui_node_value__expanded,
+		.get_size = _cgui_node_value__get_size,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
 	component->kind = CGUI_COMP_LABEL;

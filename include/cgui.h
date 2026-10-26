@@ -61,6 +61,10 @@ typedef struct {
 	// For flex containers
 	int				basis;
 	CGuiFlexMode	flex_mode;
+	int				padding_top;
+	int				padding_bottom;
+	int				padding_left;
+	int				padding_right;
 
 	// For coord containers
 	int				x;
@@ -73,6 +77,7 @@ typedef struct {
 	void				(*draw)(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 	bool				(*expanded)(CGuiTreeNode *node, void *user_data);
 	CGuiComponentProps	*(*get_props)(CGuiTreeNode *node, void *user_data);
+	int					(*get_size)(CGuiTreeNode *node, void *user_data);
 } CGuiNodeValueVTable;
 
 typedef CGuiNodeValueVTable *node_vptr;
@@ -131,11 +136,21 @@ typedef enum {
 	MODE_COORD,
 } CGuiLayoutMode;
 
+typedef enum {
+	CONT_STYLE_INVISIBLE,
+	CONT_STYLE_INSET,
+	CONT_STYLE_RAISED,
+	CONT_STYLE_RECT,
+} CGuiContStyle;
+
 typedef struct {
 	node_vptr			vptr;
 	CGuiComponentProps	props;
 	CGuiLayoutMode		layout_mode;
 	bool				reversed;
+	CGuiContStyle		style;
+
+	int					overflow_scroll;
 } CGuiContainer;
 
 typedef struct {
@@ -143,11 +158,6 @@ typedef struct {
 	int y;
 	int width;
 	int height;
-
-	int padding_top;
-	int padding_bottom;
-	int padding_left;
-	int padding_right;
 
 	CGuiColor background;
 	CGuiColor border;
@@ -178,6 +188,7 @@ struct CGuiContext {
 	bool		(*is_mouse_pressed)(CGuiMouseButton button);
 	bool		(*is_mouse_down)(CGuiMouseButton button);
 	bool		(*is_mouse_up)(CGuiMouseButton button);
+	float		(*mouse_wheel)();
 	CGuiIVec	(*mouse_pos)();
 
 	// This is kinda lazy and I know there's a better way to do this,
@@ -191,6 +202,7 @@ struct CGuiContext {
 void				_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 bool				_cgui_node_value__expanded(CGuiTreeNode *node, void *user_data);
 CGuiComponentProps	*_cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
+int					_cgui_node_value__get_size(CGuiTreeNode *node, void *user_data);
 
 CGUI_API CGuiTreeNode			*cgui_tree_node__create(void *value);
 CGUI_API int					cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
@@ -201,9 +213,10 @@ CGUI_API void					cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node
 CGUI_API CGuiNodeValue			cgui_node_value__create();
 CGUI_API void					cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGuiComponentProps				*cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
+CGUI_API int					cgui_node_value__get_size(CGuiTreeNode *node, void *user_data);
 
 CGUI_API void					cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiContainerParams *params);
-CGUI_API void					cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
+CGUI_API void					cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background, CGuiColor top_bevel, CGuiColor bottom_bevel);
 
 CGUI_API void					cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGUI_API void					cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);

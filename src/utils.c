@@ -14,6 +14,10 @@ CGuiText cgui_create_text_object(const char *text) {
 
 CGuiComponentProps cgui_create_component_props() {
 	CGuiComponentProps props = { 0 };
+	props.padding_top		= 3;
+	props.padding_bottom	= 3;
+	props.padding_left		= 3;
+	props.padding_right		= 3;
 	props.flex_mode	= FLEX_MODE_MANUAL;
 	return props;
 }

@@ -44,6 +44,10 @@ bool cgui_is_mouse_up(CGuiMouseButton button) {
 	return IsMouseButtonReleased(button);
 }
 
+float cgui_mouse_wheel() {
+	return GetMouseWheelMove();
+}
+
 CGuiIVec cgui_mouse_pos() {
 	Vector2 mouse_pos = GetMousePosition();
 	return (CGuiIVec) { (int) mouse_pos.x, (int) mouse_pos.y };
@@ -58,6 +62,7 @@ CGuiContext cgui_create_context() {
 		.is_mouse_pressed	= cgui_is_mouse_pressed,
 		.is_mouse_down		= cgui_is_mouse_down,
 		.is_mouse_up		= cgui_is_mouse_up,
+		.mouse_wheel		= cgui_mouse_wheel,
 		.mouse_pos			= cgui_mouse_pos,
 	};
 }

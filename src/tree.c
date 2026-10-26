@@ -87,10 +87,16 @@ CGuiComponentProps *_cgui_node_value__get_component_props(CGuiTreeNode *node, vo
 	return NULL;
 }
 
+int _cgui_node_value__get_size(CGuiTreeNode *node, void *user_data) {
+	CGuiComponentProps *props = cgui_node_value__get_component_props(node, user_data);
+	return props->basis;
+}
+
 CGuiNodeValue cgui_node_value__create() {
 	static CGuiNodeValueVTable vtable = {
 		.draw = _cgui_node_value__draw,
 		.get_props = _cgui_node_value__get_component_props,
+		.get_size = _cgui_node_value__get_size,
 	};
 	CGuiNodeValue value = {
 		.vptr = &vtable,
@@ -113,4 +119,12 @@ CGuiComponentProps *cgui_node_value__get_component_props(CGuiTreeNode *node, voi
 
 	CGuiNodeValue *node_value = (CGuiNodeValue *) node->value;
 	return node_value->vptr->get_props(node, user_data);
+}
+
+int cgui_node_value__get_size(CGuiTreeNode *node, void *user_data) {
+	if (!node->value)
+		return -1;
+
+	CGuiNodeValue *node_value = (CGuiNodeValue *) node->value;
+	return node_value->vptr->get_size(node, user_data);
 }
