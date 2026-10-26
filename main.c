@@ -6,17 +6,17 @@
 #include "graphics_imp.h"
 
 void test_button_cb(Context *ctx, TreeNode *button) {
-	static int next_panel = 0;
+	static int next_container = 0;
 	Button *button_value = (Button *) button->value;
 	TreeNode *node = (TreeNode *) button_value->user_data;
-	Panel *new_panel = context__create_panel(ctx);
-	Panel *grand_child_panel = context__create_panel(ctx);
+	Container *new_container = context__create_container(ctx);
+	Container *grand_child_container = context__create_container(ctx);
 	Label *label = context__create_label(ctx, "ASDSFASF");
 	label->text_object.horiz_align = abs(rand() % 3);
 	label->text_object.vert_align = abs(rand() % 3);
-	new_panel->layout_mode = Horizontal;
-	TreeNode *child = tree_node__create(new_panel);
-	TreeNode *grand_child = tree_node__create(grand_child_panel);
+	new_container->layout_mode = MODE_FLEX_HORIZ;
+	TreeNode *child = tree_node__create(new_container);
+	TreeNode *grand_child = tree_node__create(grand_child_container);
 	TreeNode *great_grand_child = tree_node__create(label);
 	tree_node__add_child(grand_child, great_grand_child);
 	tree_node__add_child(child, grand_child);
@@ -30,15 +30,15 @@ int main(int argc, char const *argv[]) {
 	CGuiContext ctx = cgui_create_context();
 	cgui_context__init(&ctx);
 
-	Panel *root_value = context__create_panel(&ctx);
-	root_value->layout_mode = Vertical;
+	Container *root_value = context__create_container(&ctx);
+	root_value->layout_mode = MODE_FLEX_VERT;
 	TreeNode *root = tree_node__create(root_value);
 
 	// Header
-	Panel *header_panel = context__create_panel(&ctx);
-	header_panel->layout_mode = Horizontal;
-	header_panel->props.basis = 40;
-	TreeNode *header = tree_node__create(header_panel);
+	Container *header_container = context__create_container(&ctx);
+	header_container->layout_mode = MODE_FLEX_HORIZ;
+	header_container->props.basis = 40;
+	TreeNode *header = tree_node__create(header_container);
 	tree_node__add_child(root, header);
 
 	for (int i = 0; i < 5; i++) {
@@ -51,23 +51,37 @@ int main(int argc, char const *argv[]) {
 	label_value->props.flex_mode = FLEX_MODE_AUTO;
 	TreeNode *label = tree_node__create(label_value);
 	tree_node__add_child(header, label);
-	Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
-	button_value->props.basis = 100;
-	TreeNode *button = tree_node__create(button_value);
-	tree_node__add_child(header, button);
+	{
+		Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
+		button_value->props.basis = 100;
+		TreeNode *button = tree_node__create(button_value);
+		tree_node__add_child(header, button);
+	}
 
 	// Body
-	Panel *body_panel = context__create_panel(&ctx);
-	body_panel->props.basis = 0;
-	body_panel->props.flex_mode = FLEX_MODE_AUTO;
-	TreeNode *body = tree_node__create(body_panel);
+	Container *body_container = context__create_container(&ctx);
+	body_container->layout_mode = MODE_COORD;
+	body_container->props.basis = 0;
+	body_container->props.flex_mode = FLEX_MODE_AUTO;
+	TreeNode *body = tree_node__create(body_container);
 	tree_node__add_child(root, body);
+	// Body Coordinate children
+	{
+		Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
+		button_value->props.x = 25;
+		button_value->props.y = 25;
+		button_value->props.width = 100;
+		button_value->props.height = 40;
+		TreeNode *button = tree_node__create(button_value);
+		tree_node__add_child(body, button);
+	}
 
 	// Footer
-	Panel *footer_panel = context__create_panel(&ctx);
-	footer_panel->layout_mode = Horizontal;
-	footer_panel->props.basis = 40;
-	TreeNode *footer = tree_node__create(footer_panel);
+	Container *footer_container = context__create_container(&ctx);
+	footer_container->reversed = true;
+	footer_container->layout_mode = MODE_FLEX_HORIZ;
+	footer_container->props.basis = 40;
+	TreeNode *footer = tree_node__create(footer_container);
 	tree_node__add_child(root, footer);
 
 	for (int i = 0; i < 3; i++) {
@@ -81,7 +95,7 @@ int main(int argc, char const *argv[]) {
 	InitWindow(1152, 648, "C Gui!");
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 
-	PanelParams params = panel_params__default();
+	ContainerParams params = container_params__default();
 	params.x = 100;
 	params.y = 100;
 	params.width = 600;

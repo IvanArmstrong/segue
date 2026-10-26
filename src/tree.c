@@ -51,7 +51,7 @@ void cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *
 }
 
 void cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent, void *user_data) {
-	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
+	CGuiContainerParams *params = (CGuiContainerParams *) user_data;
 
 	ctx->draw_rectangle(params->x, params->y, params->width, params->height, -1, CGUI_GRAY);
 	ctx->draw_rectangle(params->x, params->y, params->width, params->height, 1, CGUI_DARKGRAY);
@@ -62,7 +62,7 @@ void cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent,
 	CGuiNodeValue *value = (CGuiNodeValue *) node->value;
 	if (value->expanded) {
 		for (size_t i = 0; i < node->children_count; i++) {
-			CGuiPanelParams child_params = *params;
+			CGuiContainerParams child_params = *params;
 			child_params.x += indent * 16;
 			cgui_tree_node__draw_tree(ctx, node->children[i], indent + 1, &child_params);
 		}
@@ -70,7 +70,7 @@ void cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent,
 }
 
 void _cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
-	CGuiPanelParams params = cgui_panel_params__default();
+	CGuiContainerParams params = cgui_container_params__default();
 	cgui_tree_node__draw_tree(ctx, node, 0, &params);
 }
 

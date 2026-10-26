@@ -1,6 +1,6 @@
 #include <cgui.h>
 
-void cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiPanelParams *params) {
+void cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiContainerParams *params) {
 	if (!text_object->text)
 		return;
 

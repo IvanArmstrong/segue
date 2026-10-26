@@ -2,7 +2,7 @@
 
 void cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	CGuiButton *button = (CGuiButton *) node->value;
-	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
+	CGuiContainerParams *params = (CGuiContainerParams *) user_data;
 
 	CGuiColor background = button->normal_color;
 	CGuiIVec mouse_pos = ctx->mouse_pos();

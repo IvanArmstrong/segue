@@ -58,8 +58,15 @@ typedef enum {
 } CGuiFlexMode;
 
 typedef struct {
+	// For flex containers
 	int				basis;
 	CGuiFlexMode	flex_mode;
+
+	// For coord containers
+	int				x;
+	int				y;
+	int				width;
+	int				height;
 } CGuiComponentProps;
 
 typedef struct {
@@ -119,15 +126,17 @@ typedef struct {
 } CGuiLabel;
 
 typedef enum {
-	Horizontal,
-	Vertical,
+	MODE_FLEX_HORIZ,
+	MODE_FLEX_VERT,
+	MODE_COORD,
 } CGuiLayoutMode;
 
 typedef struct {
 	node_vptr			vptr;
 	CGuiComponentProps	props;
 	CGuiLayoutMode		layout_mode;
-} CGuiPanel;
+	bool				reversed;
+} CGuiContainer;
 
 typedef struct {
 	int x;
@@ -144,20 +153,20 @@ typedef struct {
 	CGuiColor border;
 
 	bool has_focus;
-} CGuiPanelParams;
+} CGuiContainerParams;
 
 typedef enum {
 	CGUI_COMP_BUTTON,
-	CGUI_COMP_PANEL,
+	CGUI_COMP_CONTAINER,
 	CGUI_COMP_LABEL,
 } CGuiComponentKind;
 
 typedef struct {
 	CGuiComponentKind kind;
 	union {
-		CGuiButton	button;
-		CGuiPanel	panel;
-		CGuiLabel	label;
+		CGuiButton		button;
+		CGuiContainer	container;
+		CGuiLabel		label;
 	} value;
 } CGuiComponent;
 
@@ -183,40 +192,40 @@ void				_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_
 bool				_cgui_node_value__expanded(CGuiTreeNode *node, void *user_data);
 CGuiComponentProps	*_cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
 
-CGUI_API CGuiTreeNode		*cgui_tree_node__create(void *value);
-CGUI_API int				cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
-CGUI_API void				cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
-CGUI_API void				cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
-CGUI_API void				cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent, void *user_data);
+CGUI_API CGuiTreeNode			*cgui_tree_node__create(void *value);
+CGUI_API int					cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
+CGUI_API void					cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
+CGUI_API void					cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
+CGUI_API void					cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent, void *user_data);
 
-CGUI_API CGuiNodeValue		cgui_node_value__create();
-CGUI_API void				cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGuiComponentProps			*cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiNodeValue			cgui_node_value__create();
+CGUI_API void					cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGuiComponentProps				*cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
 
-CGUI_API void				cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiPanelParams *params);
-CGUI_API void				cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
+CGUI_API void					cgui_draw_styled_text(CGuiContext *ctx, CGuiText *text_object, CGuiContainerParams *params);
+CGUI_API void					cgui_draw_bevel_rect(CGuiContext *ctx, int x, int y, int width, int height, CGuiColor background);
 
-CGUI_API void				cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGUI_API void				cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGUI_API void				cgui_label__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
-CGUI_API CGuiComponentProps *cgui_button__get_props(CGuiTreeNode *node, void *user_data);
-CGUI_API CGuiComponentProps *cgui_panel__get_props(CGuiTreeNode *node, void *user_data);
-CGUI_API CGuiComponentProps *cgui_label__get_props(CGuiTreeNode *node, void *user_data);
+CGUI_API void					cgui_button__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API void					cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API void					cgui_label__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiComponentProps 	*cgui_button__get_props(CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiComponentProps 	*cgui_container__get_props(CGuiTreeNode *node, void *user_data);
+CGUI_API CGuiComponentProps 	*cgui_label__get_props(CGuiTreeNode *node, void *user_data);
 
-CGUI_API CGuiPanelParams	cgui_panel_params__default();
-CGUI_API CGuiText			cgui_create_text_object(const char *text);
-CGUI_API CGuiComponentProps	cgui_create_component_props();
-CGUI_API bool				cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
-CGUI_API bool				cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
+CGUI_API CGuiContainerParams	cgui_container_params__default();
+CGUI_API CGuiText				cgui_create_text_object(const char *text);
+CGUI_API CGuiComponentProps		cgui_create_component_props();
+CGUI_API bool					cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
+CGUI_API bool					cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
 
-CGUI_API void				*cgui_component__get(CGuiComponent *component);
+CGUI_API void					*cgui_component__get(CGuiComponent *component);
 
-CGUI_API void				cgui_context__init(CGuiContext *ctx);
-CGUI_API int				cgui_context__add_component(CGuiContext *ctx, CGuiComponent *component);
-CGUI_API CGuiButton			*cgui_context__create_button(CGuiContext *ctx, const char *text, void (*callback)(CGuiContext *ctx, CGuiTreeNode *button), void *user_data);;
-CGUI_API CGuiPanel			*cgui_context__create_panel(CGuiContext *ctx);
-CGUI_API CGuiLabel			*cgui_context__create_label(CGuiContext *ctx, const char *text);
-CGUI_API void				cgui_context__free(CGuiContext *ctx);
+CGUI_API void					cgui_context__init(CGuiContext *ctx);
+CGUI_API int					cgui_context__add_component(CGuiContext *ctx, CGuiComponent *component);
+CGUI_API CGuiButton				*cgui_context__create_button(CGuiContext *ctx, const char *text, void (*callback)(CGuiContext *ctx, CGuiTreeNode *button), void *user_data);;
+CGUI_API CGuiContainer			*cgui_context__create_container(CGuiContext *ctx);
+CGUI_API CGuiLabel				*cgui_context__create_label(CGuiContext *ctx, const char *text);
+CGUI_API void					cgui_context__free(CGuiContext *ctx);
 
 #ifdef __cplusplus
 }
@@ -227,31 +236,31 @@ CGUI_API void				cgui_context__free(CGuiContext *ctx);
 #ifndef CGUI_STRIP_PREFIX_GUARD_
 #define CGUI_STRIP_PREFIX_GUARD_
 #	ifdef CGUI_STRIP_PREFIX
-#		define LayoutMode				CGuiLayoutMode
-#		define Button					CGuiButton
-#		define Panel					CGuiPanel
-#		define PanelParams				CGuiPanelParams
-#		define Label					CGuiLabel
-#		define TreeNode					CGuiTreeNode
-#		define NodeValue				CGuiNodeValue
-#		define Context					CGuiContext
-#		define Component				CGuiComponent
+#		define LayoutMode					CGuiLayoutMode
+#		define Button						CGuiButton
+#		define Container					CGuiContainer
+#		define ContainerParams				CGuiContainerParams
+#		define Label						CGuiLabel
+#		define TreeNode						CGuiTreeNode
+#		define NodeValue					CGuiNodeValue
+#		define Context						CGuiContext
+#		define Component					CGuiComponent
 
-#		define button__draw				cgui_button__draw
-#		define draw_bevel_rect			cgui_draw_bevel_rect
-#		define panel__draw				cgui_panel__draw
-#		define panel_params__default	cgui_panel_params__default
-#		define tree_node__create		cgui_tree_node__create
-#		define tree_node__add_child		cgui_tree_node__add_child
-#		define node_value__draw			cgui_node_value__draw
-#		define tree_node__free			cgui_tree_node__free
-#		define tree_node__free			cgui_tree_node__free
-#		define tree_node__execute		cgui_tree_node__execute
-#		define context__init			cgui_context__init
-#		define context__add_component	cgui_context__add_component
-#		define context__create_button	cgui_context__create_button
-#		define context__create_panel	cgui_context__create_panel
-#		define context__create_label	cgui_context__create_label
-#		define context__free			cgui_context__free
+#		define button__draw					cgui_button__draw
+#		define draw_bevel_rect				cgui_draw_bevel_rect
+#		define container__draw				cgui_container__draw
+#		define container_params__default	cgui_container_params__default
+#		define tree_node__create			cgui_tree_node__create
+#		define tree_node__add_child			cgui_tree_node__add_child
+#		define node_value__draw				cgui_node_value__draw
+#		define tree_node__free				cgui_tree_node__free
+#		define tree_node__free				cgui_tree_node__free
+#		define tree_node__execute			cgui_tree_node__execute
+#		define context__init				cgui_context__init
+#		define context__add_component		cgui_context__add_component
+#		define context__create_button		cgui_context__create_button
+#		define context__create_container	cgui_context__create_container
+#		define context__create_label		cgui_context__create_label
+#		define context__free				cgui_context__free
 #	endif // CGUI_STRIP_PREFIX
 #endif // CGUI_STRIP_PREFIX_GUARD_

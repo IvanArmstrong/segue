@@ -2,10 +2,26 @@
 
 #include <cgui.h>
 
-void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
-	CGuiPanel *panel = (CGuiPanel *) node->value;
-	CGuiPanelParams *params = (CGuiPanelParams *) user_data;
+void cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
+	CGuiContainer *container = (CGuiContainer *) node->value;
+	CGuiContainerParams *params = (CGuiContainerParams *) user_data;
 	cgui_draw_bevel_rect(ctx, params->x, params->y, params->width, params->height, params->background);
+
+	if (node->children_count == 0)
+		return;
+
+	if (container->layout_mode == MODE_COORD) {
+		for (size_t i = 0; i < node->children_count; i++) {
+			CGuiComponentProps *child_props = (CGuiComponentProps *) cgui_node_value__get_component_props(node->children[i], user_data);
+			CGuiContainerParams child_params = { 0 };
+			child_params.x = child_props->x + params->x;
+			child_params.y = child_props->y + params->y;
+			child_params.width = child_props->width;
+			child_params.height = child_props->height;
+			cgui_node_value__draw(ctx, node->children[i], &child_params);
+		}
+		return;
+	}
 
 	int auto_comps_len = 0;
 	int total_manual_basis = 0;
@@ -25,12 +41,12 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	if (auto_comps_len) {
 		int size;
 		int padding;
-		switch (panel->layout_mode) {
-			case Horizontal: {
+		switch (container->layout_mode) {
+			case MODE_FLEX_HORIZ: {
 				size = params->width;
 				padding = params->padding_left;
 			} break;
-			case Vertical: {
+			case MODE_FLEX_VERT: {
 				size = params->height;
 				padding = params->padding_top;
 			} break;
@@ -39,18 +55,22 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	}
 
 	int last_offset;
-	switch (panel->layout_mode) {
-		case Horizontal: {
+	switch (container->layout_mode) {
+		case MODE_FLEX_HORIZ: {
 			last_offset = params->x;
+			if (container->reversed)
+				last_offset += params->width;
 		} break;
-		case Vertical: {
+		case MODE_FLEX_VERT: {
 			last_offset = params->y;
+			if (container->reversed)
+				last_offset += params->height;
 		} break;
 	}
 
 	int last_basis = 0;
 	for (size_t i = 0; i < node->children_count; i++) {
-		CGuiPanelParams child_params = *params;
+		CGuiContainerParams child_params = *params;
 		child_params.x += params->padding_left;
 		child_params.y += params->padding_top;
 
@@ -60,18 +80,25 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 			child_props->basis = auto_basis;
 		}
 
-		switch (panel->layout_mode) {
-			case Horizontal: {
+		int mod = container->reversed ? -1 : 1;
+		switch (container->layout_mode) {
+			case MODE_FLEX_HORIZ: {
 				child_params.width = child_props->basis;
 				child_params.x = last_offset + params->padding_left;
+				if (container->reversed && i == 0)
+					child_params.x -= child_props->basis;
+				
 				last_basis = child_params.width;
-				last_offset = child_params.x + last_basis;
+				last_offset = child_params.x + last_basis * mod;
 			} break;
-			case Vertical: {
+			case MODE_FLEX_VERT: {
 				child_params.height = child_props->basis;
 				child_params.y = last_offset + params->padding_top;
+				if (container->reversed && i == 0)
+					child_params.y -= child_props->basis;
+				
 				last_basis = child_params.height;
-				last_offset = child_params.y + last_basis;
+				last_offset = child_params.y + last_basis * mod;
 			} break;
 		}
 
@@ -82,15 +109,15 @@ void cgui_panel__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
 	}
 }
 
-CGuiComponentProps *cgui_panel__get_props(CGuiTreeNode *node, void *user_data) {
+CGuiComponentProps *cgui_container__get_props(CGuiTreeNode *node, void *user_data) {
 	(void) user_data;
 
-	CGuiPanel *panel = (CGuiPanel *) node->value;
-	return &panel->props;
+	CGuiContainer *container = (CGuiContainer *) node->value;
+	return &container->props;
 }
 
-CGuiPanelParams cgui_panel_params__default() {
-	return (CGuiPanelParams) {
+CGuiContainerParams cgui_container_params__default() {
+	return (CGuiContainerParams) {
 		.x					= 0,
 		.y					= 0,
 		.width				= 100,

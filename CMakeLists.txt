@@ -15,7 +15,7 @@ add_executable(CGui main.c
 	graphics_imp.c
 
 	src/tree.c
-	src/panel.c
+	src/container.c
 	src/button.c
 	src/label.c
 	src/drawing.c

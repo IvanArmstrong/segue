@@ -47,21 +47,22 @@ CGuiButton *cgui_context__create_button(CGuiContext *ctx,
 	return &component->value.button;
 }
 
-CGuiPanel *cgui_context__create_panel(CGuiContext *ctx) {
+CGuiContainer *cgui_context__create_container(CGuiContext *ctx) {
 	static CGuiNodeValueVTable vtable = {
-		.draw = cgui_panel__draw,
-		.get_props = cgui_panel__get_props,
+		.draw = cgui_container__draw,
+		.get_props = cgui_container__get_props,
 		.expanded = _cgui_node_value__expanded,
 	};
 	CGuiComponent *component = malloc(sizeof *component);
-	component->kind = CGUI_COMP_PANEL;
-	component->value.panel = (CGuiPanel) {
+	component->kind = CGUI_COMP_CONTAINER;
+	component->value.container = (CGuiContainer) {
 		.vptr			= &vtable,
 		.props			= cgui_create_component_props(),
-		.layout_mode	= Vertical,
+		.layout_mode	= MODE_FLEX_VERT,
+		.reversed		= false,
 	};
 	cgui_context__add_component(ctx, component);
-	return &component->value.panel;
+	return &component->value.container;
 }
 
 CGuiLabel *cgui_context__create_label(CGuiContext *ctx, const char *text) {
