@@ -47,10 +47,19 @@ int main(int argc, char const *argv[]) {
 		TreeNode *button = tree_node__create(button_value);
 		tree_node__add_child(header, button);
 	}
+	Label *label_value = context__create_label(&ctx, NULL);
+	label_value->props.flex_mode = FLEX_MODE_AUTO;
+	TreeNode *label = tree_node__create(label_value);
+	tree_node__add_child(header, label);
+	Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
+	button_value->props.basis = 100;
+	TreeNode *button = tree_node__create(button_value);
+	tree_node__add_child(header, button);
 
 	// Body
 	Panel *body_panel = context__create_panel(&ctx);
 	body_panel->props.basis = 0;
+	body_panel->props.flex_mode = FLEX_MODE_AUTO;
 	TreeNode *body = tree_node__create(body_panel);
 	tree_node__add_child(root, body);
 
@@ -68,30 +77,15 @@ int main(int argc, char const *argv[]) {
 		tree_node__add_child(footer, button);
 	}
 
-	// Panel *child1_value = context__create_panel(&ctx);
-	// child1_value->layout_mode = Horizontal;
-	// TreeNode *child1 = tree_node__create(child1_value);
-
-	// Button *button = context__create_button(&ctx, "TEST", test_button_cb, root);
-	// TreeNode *child2 = tree_node__create(button);
-
-	// Panel *child3_value = context__create_panel(&ctx);
-	// TreeNode *child3 = tree_node__create(child3_value);
-
-	// Panel *child4_value = context__create_panel(&ctx);
-	// TreeNode *child4 = tree_node__create(child4_value);
-
-	// tree_node__add_child(child1, child2);
-	// tree_node__add_child(child1, child4);
-	// tree_node__add_child(root, child1);
-	// tree_node__add_child(root, child3);
-
-
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(1152, 648, "C Gui!");
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 
 	PanelParams params = panel_params__default();
+	params.x = 100;
+	params.y = 100;
+	params.width = 600;
+	params.height = 600;
 
 	bool a_held = false;
 	bool b_held = false;
@@ -100,10 +94,10 @@ int main(int argc, char const *argv[]) {
 		BeginDrawing();
 		ClearBackground(BLACK);
 
-		params.x = 0;
-		params.y = 0;
-		params.width = GetScreenWidth();
-		params.height = GetScreenHeight();
+		// params.x = 0;
+		// params.y = 0;
+		// params.width = GetScreenWidth();
+		// params.height = GetScreenHeight();
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 			Vector2 mouse_pos = GetMousePosition();

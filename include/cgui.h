@@ -52,8 +52,14 @@ typedef struct CGuiTreeNode {
 	size_t				children_cap;
 } CGuiTreeNode;
 
+typedef enum {
+	FLEX_MODE_MANUAL,
+	FLEX_MODE_AUTO,
+} CGuiFlexMode;
+
 typedef struct {
-	int	basis;
+	int				basis;
+	CGuiFlexMode	flex_mode;
 } CGuiComponentProps;
 
 typedef struct {

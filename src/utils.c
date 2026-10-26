@@ -14,7 +14,8 @@ CGuiText cgui_create_text_object(const char *text) {
 
 CGuiComponentProps cgui_create_component_props() {
 	return (CGuiComponentProps) {
-		.basis = 0,
+		.basis		= 0,
+		.flex_mode	= FLEX_MODE_MANUAL,
 	};
 }
 
