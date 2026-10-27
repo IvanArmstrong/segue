@@ -6,6 +6,10 @@ void cgui_context__init(CGuiContext *ctx) {
 	ctx->components			= NULL;
 	ctx->components_count	= 0;
 	ctx->components_cap		= 0;
+
+	ctx->string_store		= NULL;
+	ctx->string_count		= 0;
+	ctx->string_cap			= 0;
 }
 
 int cgui_context__add_component(CGuiContext *ctx, CGuiComponent *component) {
@@ -22,7 +26,7 @@ int cgui_context__add_component(CGuiContext *ctx, CGuiComponent *component) {
 }
 
 CGuiButton *cgui_context__create_button(CGuiContext *ctx, 
-		const char *text, 
+		char *text, 
 		void (*callback)(CGuiContext *ctx, CGuiTreeNode *button), 
 		void *user_data) {
 	static CGuiNodeValueVTable vtable = {
@@ -65,12 +69,14 @@ CGuiContainer *cgui_context__create_container(CGuiContext *ctx) {
 		.style				= CONT_STYLE_INVISIBLE,
 
 		.overflow_scroll	= 0,
+		.can_select			= false,
+		.selection_index	= -1,
 	};
 	cgui_context__add_component(ctx, component);
 	return &component->value.container;
 }
 
-CGuiLabel *cgui_context__create_label(CGuiContext *ctx, const char *text) {
+CGuiLabel *cgui_context__create_label(CGuiContext *ctx, char *text) {
 	static CGuiNodeValueVTable vtable = {
 		.draw = cgui_label__draw,
 		.get_props = cgui_label__get_props,
@@ -93,4 +99,31 @@ void cgui_context__free(CGuiContext *ctx) {
 		free(ctx->components[i]);
 	}
 	free(ctx->components);
+}
+
+char *cgui_context__create_str(CGuiContext *ctx, char *source) {
+	if (ctx->string_count >= ctx->string_cap) {
+		size_t new_cap = ctx->string_cap ? ctx->string_cap * 2 : 4;
+		char **temp = realloc(ctx->string_store, new_cap * sizeof *temp);
+		if (!temp)
+			return NULL;
+		ctx->string_store = temp;
+		ctx->string_cap = new_cap;
+	}
+	ctx->string_count++;
+	memcpy(ctx->string_store[ctx->string_count], source);
+	return ctx->string_store[ctx->string_count];
+}
+
+void cgui_context__free_str(CGuiContext *ctx, size_t index) {
+	if (index >= ctx->string_count)
+		return;
+
+	free(ctx->string_store[index]);
+
+	memmove(&ctx->string_store[index],
+			&ctx->string_store[index + 1],
+			(ctx->string_count - index - 1) * sizeof *ctx->string_store);
+
+	ctx->string_store[--ctx->string_count] = NULL;
 }

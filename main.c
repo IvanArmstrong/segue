@@ -5,27 +5,42 @@
 
 #include "graphics_imp.h"
 
-void test_button_cb(Context *ctx, TreeNode *button) {
-	static int next_container = 0;
-	Button *button_value = (Button *) button->value;
-	TreeNode *node = (TreeNode *) button_value->user_data;
-	Container *new_container = context__create_container(ctx);
-	Container *grand_child_container = context__create_container(ctx);
-	Label *label = context__create_label(ctx, "ASDSFASF");
-	label->text_object.horiz_align = abs(rand() % 3);
-	label->text_object.vert_align = abs(rand() % 3);
-	new_container->layout_mode = MODE_FLEX_HORIZ;
-	TreeNode *child = tree_node__create(new_container);
-	TreeNode *grand_child = tree_node__create(grand_child_container);
-	TreeNode *great_grand_child = tree_node__create(label);
-	tree_node__add_child(grand_child, great_grand_child);
-	tree_node__add_child(child, grand_child);
-	tree_node__add_child(node, child);
-	button_value->user_data = child;
+void add_button(Context *ctx, TreeNode *parent) {
+	static int button_id = 0;
+	static char str[20][20] = { 0 };
+	Container *value = context__create_container(ctx);
+	value->layout_mode = MODE_FLEX_HORIZ;
+	value->props.basis = 40;
+	TreeNode *container = tree_node__create(value);
+	tree_node__add_child(parent, container);
+
+	sprintf(str[button_id], "Button %d", button_id);
+	Button *button_value = context__create_button(ctx, str[button_id], NULL, NULL);
+	button_value->props.basis = 100;
+	TreeNode *button = tree_node__create(button_value);
+	tree_node__add_child(container, button);
+
+	button_id++;
+}
+
+void add_button_cb(Context *ctx, TreeNode *button) {
+	Button *value = button->value;
+	TreeNode *node = value->user_data;
+	add_button(ctx, node);
+}
+
+void remove_node(Context *ctx, TreeNode *button) {
+	(void) ctx;
+	Button *value = (Button *) button->value;
+	TreeNode *parent = (TreeNode *) value->user_data;
+	Container *container = parent->value;
+	if (container->selection_index < 0)
+		return;
+	tree_node__remove_child(parent, container->selection_index);
 }
 
 int main(int argc, char const *argv[]) {
-	srand(time(NULL));
+	srand((unsigned int) time(NULL));
 
 	CGuiContext ctx = cgui_create_context();
 	cgui_context__init(&ctx);
@@ -73,22 +88,21 @@ int main(int argc, char const *argv[]) {
 	body_button_container_value->style = CONT_STYLE_INSET;
 	body_button_container_value->layout_mode = MODE_FLEX_VERT;
 	body_button_container_value->props.flex_mode = FLEX_MODE_AUTO;
+	body_button_container_value->can_select = true;
+	body_button_container_value->props.padding = (Padding) { 0 };
 	TreeNode *body_button_container = tree_node__create(body_button_container_value);
 	tree_node__add_child(body, body_button_container);
 
-	char str[20][20] = { 0 };
 	for (int i = 0; i < 20; i++) {
-		Container *button_container_value = context__create_container(&ctx);
-		button_container_value->layout_mode = MODE_FLEX_HORIZ;
-		button_container_value->props.basis = 40;
-		TreeNode *button_container = tree_node__create(button_container_value);
-		tree_node__add_child(body_button_container, button_container);
+		add_button(&ctx, body_button_container);
+	}
 
-		sprintf(str[i], "BUTTON %d", i + 1);
-		Button *button_value = context__create_button(&ctx, str[i], NULL, NULL);
+	{
+		// Add button
+		Button *button_value = context__create_button(&ctx, "Add", add_button_cb, body_button_container);
 		button_value->props.basis = 100;
 		TreeNode *button = tree_node__create(button_value);
-		tree_node__add_child(button_container, button);
+		tree_node__add_child(header, button);
 	}
 
 	// Body Coordinate Container
@@ -100,7 +114,7 @@ int main(int argc, char const *argv[]) {
 	tree_node__add_child(body, body_coord_container);
 	// Body Coordinate children
 	{
-		Button *button_value = context__create_button(&ctx, "BUTTON", NULL, NULL);
+		Button *button_value = context__create_button(&ctx, "Remove", remove_node, body_button_container);
 		button_value->props.x = 25;
 		button_value->props.y = 25;
 		button_value->props.width = 100;

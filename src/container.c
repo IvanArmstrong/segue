@@ -62,12 +62,13 @@ void cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data)
 		switch (container->layout_mode) {
 			case MODE_FLEX_HORIZ: {
 				size = params->width;
-				padding = container->props.padding_left;
+				padding = container->props.padding.left;
 			} break;
 			case MODE_FLEX_VERT: {
 				size = params->height;
-				padding = container->props.padding_top;
+				padding = container->props.padding.top;
 			} break;
+			case MODE_COORD: break;
 		}
 		auto_basis = (size - total_manual_basis - (padding * node->children_count)) / auto_comps_len;
 	}
@@ -75,12 +76,12 @@ void cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data)
 	// Calculate overflow
 	int overflow = ((auto_basis * auto_comps_len) + total_manual_basis) - params->width;
 
-	// Scroll wheel offset
 	CGuiIVec mouse_pos = ctx->mouse_pos();
 	if (mouse_pos.x >= params->x && 
 		mouse_pos.x < params->x + params->width &&
 		mouse_pos.y >= params->y &&
 		mouse_pos.y < params->y + params->height) {
+		// Scroll wheel offset
 		container->overflow_scroll += ctx->mouse_wheel();
 		container->overflow_scroll = max(0, min(overflow, container->overflow_scroll));
 	}
@@ -97,13 +98,17 @@ void cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data)
 			if (container->reversed)
 				last_offset += params->height;
 		} break;
+		case MODE_COORD: break;
 	}
+
+	if (container->selection_index >= node->children_count)
+		container->selection_index = -1;
 
 	int last_basis = 0;
 	for (size_t i = 0; i < node->children_count; i++) {
 		CGuiContainerParams child_params = *params;
-		child_params.x += container->props.padding_left;
-		child_params.y += container->props.padding_top;
+		child_params.x += container->props.padding.left;
+		child_params.y += container->props.padding.top;
 
 		CGuiComponentProps *child_props = cgui_node_value__get_component_props(node->children[i], user_data);
 
@@ -115,7 +120,7 @@ void cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data)
 		switch (container->layout_mode) {
 			case MODE_FLEX_HORIZ: {
 				child_params.width = child_props->basis;
-				child_params.x = last_offset + container->props.padding_left;
+				child_params.x = last_offset + container->props.padding.left;
 				if (container->reversed && i == 0)
 					child_params.x -= child_props->basis;
 				
@@ -124,23 +129,39 @@ void cgui_container__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data)
 			} break;
 			case MODE_FLEX_VERT: {
 				child_params.height = child_props->basis;
-				child_params.y = last_offset + container->props.padding_top;
+				child_params.y = last_offset + container->props.padding.top;
 				if (container->reversed && i == 0)
 					child_params.y -= child_props->basis;
 				
 				last_basis = child_params.height;
 				last_offset = child_params.y + last_basis * mod;
 			} break;
+			case MODE_COORD: break;
 		}
 
-		child_params.width -= container->props.padding_left + container->props.padding_right;
-		child_params.height -= container->props.padding_top + container->props.padding_bottom;
+		child_params.width -= container->props.padding.left + container->props.padding.right;
+		child_params.height -= container->props.padding.top + container->props.padding.bottom;
 
 		if (child_params.x < params->x || child_params.x + child_params.width > params->x + params->width ||
 			child_params.y < params->y || child_params.y + child_params.height > params->y + params->height)
 			continue;
 
 		cgui_node_value__draw(ctx, node->children[i], &child_params);
+
+		// Child Selection
+		if (container->can_select) {
+			if (ctx->is_mouse_down(CGUI_MOUSE_LEFT)) {
+				// Mouse on child?
+				if (cgui_check_collision_point_rec(mouse_pos.x, mouse_pos.y, child_params.x, child_params.y, child_params.width, child_params.height)) {
+					container->selection_index = i;
+				}
+			}
+		} else {
+			container->selection_index = -1;
+		}
+
+		if (container->selection_index == i)
+			ctx->draw_rectangle(child_params.x, child_params.y, child_params.width, child_params.height, 0, (CGuiColor) { 0, 0, 255, 100});
 	}
 }
 
@@ -151,7 +172,7 @@ CGuiComponentProps *cgui_container__get_props(CGuiTreeNode *node, void *user_dat
 	return &container->props;
 }
 
-CGuiContainerParams cgui_container_params__default() {
+CGuiContainerParams cgui_container_params__default(void) {
 	return (CGuiContainerParams) {
 		.x					= 0,
 		.y					= 0,

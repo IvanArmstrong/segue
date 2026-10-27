@@ -2,7 +2,7 @@
 
 #include <cgui.h>
 
-CGuiText cgui_create_text_object(const char *text) {
+CGuiText cgui_create_text_object(char *text) {
 	return (CGuiText) {
 		.text			= text,
 		.font_size		= 16,
@@ -14,10 +14,12 @@ CGuiText cgui_create_text_object(const char *text) {
 
 CGuiComponentProps cgui_create_component_props() {
 	CGuiComponentProps props = { 0 };
-	props.padding_top		= 3;
-	props.padding_bottom	= 3;
-	props.padding_left		= 3;
-	props.padding_right		= 3;
+	props.padding = (CGuiPadding) {
+		.top	= 3,
+		.bottom	= 3,
+		.left	= 3,
+		.right	= 3,
+	};
 	props.flex_mode	= FLEX_MODE_MANUAL;
 	return props;
 }

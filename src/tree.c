@@ -27,6 +27,19 @@ int cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child) {
 	return 0;
 }
 
+void cgui_tree_node__remove_child(CGuiTreeNode *parent, int child_index) {
+	if (child_index >= parent->children_count)
+		return;
+
+	cgui_tree_node__free(parent->children[child_index], NULL);
+
+	memmove(&parent->children[child_index],
+			&parent->children[child_index + 1],
+			(parent->children_count - child_index - 1) * sizeof *parent->children);
+
+	parent->children[--parent->children_count] = NULL;
+}
+
 void cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *)) {
 	if (!node)
 		return;
@@ -70,11 +83,13 @@ void cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent,
 }
 
 void _cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data) {
+	(void) user_data;
 	CGuiContainerParams params = cgui_container_params__default();
 	cgui_tree_node__draw_tree(ctx, node, 0, &params);
 }
 
 bool _cgui_node_value__expanded(CGuiTreeNode *node, void *user_data) {
+	(void) user_data;
 	if (!node->value)
 		return false;
 	CGuiNodeValue *value = (CGuiNodeValue *) node->value;

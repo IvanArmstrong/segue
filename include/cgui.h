@@ -58,19 +58,23 @@ typedef enum {
 } CGuiFlexMode;
 
 typedef struct {
+	int top;
+	int bottom;
+	int left;
+	int right;
+} CGuiPadding;
+
+typedef struct {
 	// For flex containers
 	int				basis;
 	CGuiFlexMode	flex_mode;
-	int				padding_top;
-	int				padding_bottom;
-	int				padding_left;
-	int				padding_right;
+	CGuiPadding		padding;
 
 	// For coord containers
-	int				x;
-	int				y;
-	int				width;
-	int				height;
+	int x;
+	int y;
+	int width;
+	int height;
 } CGuiComponentProps;
 
 typedef struct {
@@ -101,7 +105,7 @@ typedef enum {
 } CGuiHorizAlign;
 
 typedef struct {
-	const char		*text;
+	char			*text;
 	int				font_size;
 	CGuiHorizAlign	horiz_align;
 	CGuiVertAlign	vert_align;
@@ -151,6 +155,8 @@ typedef struct {
 	CGuiContStyle		style;
 
 	int					overflow_scroll;
+	bool				can_select;
+	int					selection_index;
 } CGuiContainer;
 
 typedef struct {
@@ -188,8 +194,8 @@ struct CGuiContext {
 	bool		(*is_mouse_pressed)(CGuiMouseButton button);
 	bool		(*is_mouse_down)(CGuiMouseButton button);
 	bool		(*is_mouse_up)(CGuiMouseButton button);
-	float		(*mouse_wheel)();
-	CGuiIVec	(*mouse_pos)();
+	float		(*mouse_wheel)(void);
+	CGuiIVec	(*mouse_pos)(void);
 
 	// This is kinda lazy and I know there's a better way to do this,
 	// but I didn't want to implement a malloc for each freaking component. No way, man.
@@ -197,6 +203,10 @@ struct CGuiContext {
 	CGuiComponent	**components;
 	size_t			components_count;
 	size_t			components_cap;
+
+	char			**string_store;
+	size_t			string_count;
+	size_t			string_cap;
 };
 
 void				_cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
@@ -206,11 +216,12 @@ int					_cgui_node_value__get_size(CGuiTreeNode *node, void *user_data);
 
 CGUI_API CGuiTreeNode			*cgui_tree_node__create(void *value);
 CGUI_API int					cgui_tree_node__add_child(CGuiTreeNode *parent, CGuiTreeNode *child);
+CGUI_API void					cgui_tree_node__remove_child(CGuiTreeNode *parent, int child_index);
 CGUI_API void					cgui_tree_node__free(CGuiTreeNode *node, void (*free_value_cb)(void *));
 CGUI_API void					cgui_tree_node__execute(CGuiTreeNode *node, void (*callback)(CGuiTreeNode *, void *), void *user_data);
 CGUI_API void					cgui_tree_node__draw_tree(CGuiContext *ctx, CGuiTreeNode *node, int indent, void *user_data);
 
-CGUI_API CGuiNodeValue			cgui_node_value__create();
+CGUI_API CGuiNodeValue			cgui_node_value__create(void);
 CGUI_API void					cgui_node_value__draw(CGuiContext *ctx, CGuiTreeNode *node, void *user_data);
 CGuiComponentProps				*cgui_node_value__get_component_props(CGuiTreeNode *node, void *user_data);
 CGUI_API int					cgui_node_value__get_size(CGuiTreeNode *node, void *user_data);
@@ -225,9 +236,9 @@ CGUI_API CGuiComponentProps 	*cgui_button__get_props(CGuiTreeNode *node, void *u
 CGUI_API CGuiComponentProps 	*cgui_container__get_props(CGuiTreeNode *node, void *user_data);
 CGUI_API CGuiComponentProps 	*cgui_label__get_props(CGuiTreeNode *node, void *user_data);
 
-CGUI_API CGuiContainerParams	cgui_container_params__default();
-CGUI_API CGuiText				cgui_create_text_object(const char *text);
-CGUI_API CGuiComponentProps		cgui_create_component_props();
+CGUI_API CGuiContainerParams	cgui_container_params__default(void);
+CGUI_API CGuiText				cgui_create_text_object(char *text);
+CGUI_API CGuiComponentProps		cgui_create_component_props(void);
 CGUI_API bool					cgui_check_collision_point_rec(int px, int py, int rx, int ry, int rwidth, int rheight);
 CGUI_API bool					cgui_check_collision_point_circle(int px, int py, int cx, int cy, int radius);
 
@@ -235,9 +246,11 @@ CGUI_API void					*cgui_component__get(CGuiComponent *component);
 
 CGUI_API void					cgui_context__init(CGuiContext *ctx);
 CGUI_API int					cgui_context__add_component(CGuiContext *ctx, CGuiComponent *component);
-CGUI_API CGuiButton				*cgui_context__create_button(CGuiContext *ctx, const char *text, void (*callback)(CGuiContext *ctx, CGuiTreeNode *button), void *user_data);;
+CGUI_API CGuiButton				*cgui_context__create_button(CGuiContext *ctx, char *text, void (*callback)(CGuiContext *ctx, CGuiTreeNode *button), void *user_data);;
 CGUI_API CGuiContainer			*cgui_context__create_container(CGuiContext *ctx);
-CGUI_API CGuiLabel				*cgui_context__create_label(CGuiContext *ctx, const char *text);
+CGUI_API CGuiLabel				*cgui_context__create_label(CGuiContext *ctx, char *text);
+CGUI_API char					*cgui_context__create_str(CGuiContext *ctx, char *source);
+CGUI_API void					cgui_context__free_str(CGuiContext *ctx, size_t index);
 CGUI_API void					cgui_context__free(CGuiContext *ctx);
 
 #ifdef __cplusplus
@@ -258,6 +271,7 @@ CGUI_API void					cgui_context__free(CGuiContext *ctx);
 #		define NodeValue					CGuiNodeValue
 #		define Context						CGuiContext
 #		define Component					CGuiComponent
+#		define Padding						CGuiPadding
 
 #		define button__draw					cgui_button__draw
 #		define draw_bevel_rect				cgui_draw_bevel_rect
@@ -265,6 +279,7 @@ CGUI_API void					cgui_context__free(CGuiContext *ctx);
 #		define container_params__default	cgui_container_params__default
 #		define tree_node__create			cgui_tree_node__create
 #		define tree_node__add_child			cgui_tree_node__add_child
+#		define tree_node__remove_child		cgui_tree_node__remove_child
 #		define node_value__draw				cgui_node_value__draw
 #		define tree_node__free				cgui_tree_node__free
 #		define tree_node__free				cgui_tree_node__free

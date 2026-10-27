@@ -44,11 +44,11 @@ bool cgui_is_mouse_up(CGuiMouseButton button) {
 	return IsMouseButtonReleased(button);
 }
 
-float cgui_mouse_wheel() {
+float cgui_mouse_wheel(void) {
 	return GetMouseWheelMove();
 }
 
-CGuiIVec cgui_mouse_pos() {
+CGuiIVec cgui_mouse_pos(void) {
 	Vector2 mouse_pos = GetMousePosition();
 	return (CGuiIVec) { (int) mouse_pos.x, (int) mouse_pos.y };
 }

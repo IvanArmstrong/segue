@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
+set(CMAKE_C_STANDARD 99)
 project(CGui)
 
 include(FetchContent)
@@ -23,13 +24,11 @@ add_executable(CGui main.c
 	src/context.c
 )
 
-# add_library(CGui SHARED
-# 	src/tree.c
-# 	src/panel.c
-# 	src/button.c
-# 	src/drawing.c
-# 	src/utils.c
-# )
+# if(MSVC)
+# 	target_compile_options(CGui PRIVATE /W4 /Wall)
+# else()
+# 	target_compile_options(CGui PRIVATE -Wall -Wextra -Wpedantic)
+# endif()
 
 target_include_directories(CGui PUBLIC platform/windows)
 
